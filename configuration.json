@@ -1,0 +1,44 @@
+[
+  {
+    "key": "ApiUser",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "ApiUser",
+      "description": "The UserName for the ApiUser that has rights to connect to the SDBHR API",
+      "required": true
+    }
+  },
+  {
+    "key": "ApiKey",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "type": "password",
+      "label": "ApiKey",
+      "description": "The ApiKey to connect to the SDBHR API",
+      "required": true
+    }
+  },
+  {
+    "key": "KlantNummer",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "KlantNummer",
+      "description": "The number of the customer. Usually these are three digit numbers",
+      "required": true
+    }
+  },
+  {
+    "key": "BaseUrl",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "BaseUrl",
+      "placeholder": "https://api-<Customer>.sdbstart.nl",
+      "description": "The BaseUrl to the SDBHR environment",
+      "required": true
+    }
+  }
+]

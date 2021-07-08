@@ -1,0 +1,238 @@
+{
+    "personMappings": [
+        {
+            "name": "Contact.Business.Email",
+            "mode": "field",
+            "value": "EmailZakelijk",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.BirthDate",
+            "mode": "field",
+            "value": "GeboorteDatum",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.Gender",
+            "mode": "field",
+            "value": "Geslacht",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.MaritalStatus",
+            "mode": "field",
+            "value": "Burgerlijkestaat.Omschrijving",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "ExternalId",
+            "mode": "field",
+            "value": "ExternalId",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.Convention",
+            "mode": "complex",
+            "value": "\r\nfunction convertNameConvention() {\r\n    let convention = \"\";\r\n    switch (source.Tenaamstelling.Code) {\r\n        case \"0\":\r\n            convention = \"B\";\r\n            break;\r\n        case \"1\":\r\n            convention = \"B\";\r\n            break;\r\n        case \"2\":\r\n            convention = \"PB\";\r\n            break;\r\n        case \"3\":\r\n            convention = \"P\";\r\n            break;\r\n        case \"4\":\r\n            convention = \"BP\";\r\n            break;\r\n        default: convention = \"B\";\r\n            break;\r\n    }    return convention;\r\n} \r\nconvertNameConvention()",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.FamilyName",
+            "mode": "field",
+            "value": "AchterNaam",
+            "validation": {
+                "required": true
+            }
+        },
+        {
+            "name": "Name.FamilyNamePartner",
+            "mode": "field",
+            "value": "PartnerAchternaam",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.FamilyNamePartnerPrefix",
+            "mode": "field",
+            "value": "PartnerTussenvoegsel",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.FamilyNamePrefix",
+            "mode": "field",
+            "value": "Tussenvoegsel",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.GivenName",
+            "mode": "field",
+            "value": "RoepNaam",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.Initials",
+            "mode": "field",
+            "value": "Voorletters",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Name.NickName",
+            "mode": "field",
+            "value": "RoepNaam",
+            "validation": {
+                "required": true
+            }
+        }
+    ],
+    "contractMappings": [
+        {
+            "name": "CostCenter.Code",
+            "mode": "field",
+            "value": "Afdeling.Kostenplaats.Code",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "CostCenter.ExternalId",
+            "mode": "field",
+            "value": "Afdeling.Kostenplaats.Code",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "CostCenter.Name",
+            "mode": "field",
+            "value": "Afdeling.Kostenplaats.Omschrijving",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Department.DisplayName",
+            "mode": "field",
+            "value": "Afdeling.Omschrijving",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Department.ExternalId",
+            "mode": "field",
+            "value": "Afdeling.Code",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.HoursPerWeek",
+            "mode": "field",
+            "value": "UrenPerWeek",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.Percentage",
+            "mode": "field",
+            "value": "ParttimeFactor",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Details.Sequence",
+            "mode": "field",
+            "value": "Volgnummer",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "EndDate",
+            "mode": "field",
+            "value": "Contract.EindDatum",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "ExternalId",
+            "mode": "field",
+            "value": "ExternalId",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Manager.ExternalId",
+            "mode": "field",
+            "value": "Afdeling.Leidinggevenden",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "StartDate",
+            "mode": "field",
+            "value": "Contract.BeginDatum",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Title.ExternalId",
+            "mode": "field",
+            "value": "Functie.Code",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Title.Name",
+            "mode": "field",
+            "value": "Functie.Omschrijving",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Type.Code",
+            "mode": "field",
+            "value": "Contractvorm.Code",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Type.Description",
+            "mode": "field",
+            "value": "Contractvorm.Omschrijving",
+            "validation": {
+                "required": false
+            }
+        }
+    ]
+}
