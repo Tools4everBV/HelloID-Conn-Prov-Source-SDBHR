@@ -1,6 +1,6 @@
 # HelloID-Conn-Prov-Source-SDBHR
 
-![Logo](asset\logo.jpg)
+![Logo](asset/logo.jpg)
 
 #####This connector is not yet tested on a Customer Production Environment!
 
@@ -22,7 +22,7 @@ The SDB-HR connector is a source and provides a set of REST API's that allow you
 | Endpoint     | Description |
 | ------------ | ----------- |
 | /MedewerkersBasic    | Contains the same information as the /Mederwerkers Endpoint, but does not include a BSN |
-| /DienstverbandenBasic     |  Contains the same information as the /ienstverbanden Endpoint, but does not include a salary information |
+| /DienstverbandenBasic     |  Contains the same information as the /Dienstverbanden Endpoint, but does not include a salary information |
 | /afdelingen |     -        |
 
 
@@ -43,6 +43,7 @@ The following settings are required to connect to the API.
 ### Remarks
 
 - The employee data set can contain multiple person objects for a single identity. There is no identifier available that is identifiable to a single (real) person. And each person's object includes single employment.
+- There are multiple (2) start and end date fields on the contract, please be wary when selecting these in the mapping.
 
 ### Contents
 
