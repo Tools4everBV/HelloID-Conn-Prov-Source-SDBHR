@@ -2,8 +2,6 @@
 
 ![Logo](asset/logo.jpg)
 
-#####This connector is not yet tested on a Customer Production Environment!
-
 ## Table of contents
 
 - [Introduction](#Introduction)
