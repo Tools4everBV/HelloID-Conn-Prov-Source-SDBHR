@@ -1,3 +1,6 @@
+> _**Currently there is a mismatch with the employment/contract data, we are investigating this.
+Please refrain from using this connector until further notice.**_
+
 # HelloID-Conn-Prov-Source-SDBHR
 
 ![Logo](asset/logo.jpg)
