@@ -17,6 +17,8 @@
 
 The SDB-HR connector is a source and provides a set of REST API's that allow you to programmatically interact with it's data. The HelloID connector uses the API endpoints in the table below.
 
+https://api.sdbstart.nl/swagger/ui/index#Resources
+
 | Endpoint     | Description |
 | ------------ | ----------- |
 | /MedewerkersBasic    | Contains the same information as the /Mederwerkers Endpoint, but does not include a BSN |
