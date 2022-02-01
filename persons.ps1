@@ -150,12 +150,6 @@ try {
     $employmentsGrouped = $employmentsList | Group-Object PersoneelsNummer -AsString -AsHashTable
 
 
-    # 2021/10/28 - RS - Filter out specific (9) persons (without nickname)
-    # These cannot be corrected in HR anymore, since they don't exist in SDBHR anymore.
-    # Only in SDB Salary (where this cannot be corrected) and the data we query is from SDB Salary
-    $employeeIdsToExclude = @("90555", "90109", "96760", "94500", "93940", "98760", "90431", "93558", "90181")
-    Write-Verbose "Filtering out [$($employeeIdsToExclude.Count)] persons without nicknames (which cannot be corrected anymore).."
-
     Write-Verbose "Found $($personsResponse.Count) employees. Filtering for employees with contracts within thresholds and creating list of employees to return"
     $returnPersons = [System.Collections.generic.List[object]]::new()
     foreach ($person in $personsResponse) {
@@ -165,11 +159,8 @@ try {
 
         # Filter for employees with contracts
         if ($person.Contracts.Id.Count -ge 1) {
-            # 2021/10/28 - RS - Filter out specific (9) persons (without nickname)
-            if ($person.Id -notin $employeeIdsToExclude) {
-                $null = $returnPersons.Add($person)
-                Write-Output $person | ConvertTo-Json -Depth 10
-            }
+            $null = $returnPersons.Add($person)
+            Write-Output $person | ConvertTo-Json -Depth 10
         }
         else {
             # Employee has no contracts within thresholds, not importing employee data
