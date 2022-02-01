@@ -4,6 +4,15 @@
 |:---------------------------|
 | This repository contains the connector and configuration code only. The implementer is responsible to acquire the connection details such as username, password, certificate, etc. You might even need to sign a contract or agreement with the supplier before implementing this connector. Please contact the client's application manager to coordinate the connector requirements.       |
 
+### Remarks
+
+| ⚠️ Warning |
+|:---------------------------|
+| The employee data set can contain **multiple person objects for a single identity**. There is **no identifier** available that is identifiable to a single (real) person. And each person's object includes single employment. This can result in **multiple persons in HelloID for the same person** |
+|There are **multiple (2) start and end date fields**, both on the employment (dienstverband) and the contract (contract), please be wary when selecting these in the mapping. **By default** we use the **date fields of the employment (dienstverband)**. |
+| Currently, we only receive **one single contract per employment**, **this is always the latest contract!** from the SDB endpoints that we invoke. Because of this, in most situations we use the start and end date of the **employment**. <br/><br/> This is not the optimal situation (as we, Tools4ever are accustomed to), as we "normally" get the history and future contracts as well. <br/> This history and future data is needed so that we can optionally also assign rights prior to an active contract or just after. <br/><br/> For this reason it is also required that in the case where **double rights** are required (based on multiple active contracts), there is also an a **extra employment** and the rights can therefore be assigned based on both employments. |
+| This connector (now) **only imports the persons with a contract within the threshold**, this also uses the date fields on the employment (dienstverband), please keep this in mind and change this accordingly if needed.       |
+
 <br />
 
 ![Logo](asset/logo.jpg)
@@ -50,20 +59,6 @@ The following settings are required to connect to the API.
 | ApiKey     | The ApiKey to connect to the SDBHR API  |
 | KlantNummer    |   The number of the customer. Usually these are three digit numbers |
 | BaseUrl | The BaseUrl to the SDBHR environment (https://api-<Customer>.sdbstart.nl)  |
-
-
-### Remarks
-
-- The employee data set can contain multiple person objects for a single identity. There is no identifier available that is identifiable to a single (real) person. And each person's object includes single employment.
-- There are multiple (2) start and end date fields, both on the employment (dienstverband) and the contract (contract), please be wary when selecting these in the mapping. By default we use the date fields of the employment (dienstverband).
-  - Currently, we only receive **one single contract per employment**, **this is always the latest contract!** from the SDB endpoints that we invoke. Because of this, in most situations we use the start and end date of the **employment**.
-    
-    This is not the optimal situation (as we, Tools4ever are accustomed to), as we "normally" get the history and future contracts as well
-    This history and future data is needed so that we can optionally also assign rights prior to an active contract or just after.
-
-    For this reason it is also required that in the case where double rights are required (based on multiple active contracts), there is also an a extra employment and the rights can therefore be assigned based on both employments.
-- This connector (now) only imports the persons with acontract within the threshold, this also uses the date fields on the employment (dienstverband), please keep this in mind and change this accordingly if needed.
-
 
 ### Contents
 
