@@ -4,7 +4,7 @@
     "type": "input",
     "defaultValue": "",
     "templateOptions": {
-      "label": "ApiUser",
+      "label": "Api User",
       "description": "The UserName for the ApiUser that has rights to connect to the SDBHR API",
       "required": true
     }
@@ -15,7 +15,7 @@
     "defaultValue": "",
     "templateOptions": {
       "type": "password",
-      "label": "ApiKey",
+      "label": "Api Key",
       "description": "The ApiKey to connect to the SDBHR API",
       "required": true
     }
@@ -35,9 +35,31 @@
     "type": "input",
     "defaultValue": "",
     "templateOptions": {
-      "label": "BaseUrl",
+      "label": "Base Url",
       "placeholder": "https://api-<Customer>.sdbstart.nl",
       "description": "The BaseUrl to the SDBHR environment",
+      "required": true
+    }
+  },
+  {
+    "key": "PastThreshold",
+    "type": "input",
+    "defaultValue": "6",
+    "templateOptions": {
+      "label": "Past Threshold",
+      "placeholder": "6",
+      "description": "The amount of months a contract's enddate can be in the past and still be included in the import",
+      "required": true
+    }
+  },
+  {
+    "key": "FutureThreshold",
+    "type": "input",
+    "defaultValue": "3",
+    "templateOptions": {
+      "label": "Future Threshold",
+      "placeholder": "3",
+      "description": "The amount of months a contract's startdate can be in the future and still be included in the import",
       "required": true
     }
   }
