@@ -8,10 +8,10 @@ $VerbosePreference = "Continue"
 
 $config = $Configuration | ConvertFrom-Json
 
-$ApiUser         = $($config.ApiUser)
-$ApiKey          = $($config.ApiKey)
-$KlantNummer     = $($config.KlantNummer)
-$BaseUrl         = $($config.BaseUrl)
+$ApiUser = $($config.ApiUser)
+$ApiKey = $($config.ApiKey)
+$KlantNummer = $($config.KlantNummer)
+$BaseUrl = $($config.BaseUrl)
 
 #region Helper Functions
 function New-SDBHRCalculatedHash {
@@ -41,7 +41,8 @@ function New-SDBHRCalculatedHash {
         $hashedString = [System.Convert]::ToBase64String($hash)
 
         Write-Output $hashedString
-    } catch {
+    }
+    catch {
         $PScmdlet.ThrowTerminatingError($_)
     }
 }
@@ -70,7 +71,8 @@ function Invoke-SDBHRRestMethod {
                 Headers     = $Headers
             }
             Invoke-RestMethod @splatRestMethodParameters
-        } catch {
+        }
+        catch {
             $PSCmdlet.ThrowTerminatingError($_)
         }
     }
@@ -92,7 +94,8 @@ function Resolve-HTTPError {
         }
         if ($ErrorObject.Exception.GetType().FullName -eq 'Microsoft.PowerShell.Commands.HttpResponseException') {
             $HttpErrorObj['ErrorMessage'] = $ErrorObject.ErrorDetails.Message
-        } elseif ($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException') {
+        }
+        elseif ($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException') {
             $stream = $ErrorObject.Exception.Response.GetResponseStream()
             $stream.Position = 0
             $streamReader = [System.IO.StreamReader]::new($Stream)
@@ -104,12 +107,12 @@ function Resolve-HTTPError {
 }
 #endregion Helper Functions
 
-try{
+try {
     $currentDateTime = (Get-Date).ToString("dd-MM-yyyy HH:mm:ss.fff")
     $hashedString = New-SDBHRCalculatedHash -ApiKey $ApiKey -KlantNummer $KlantNummer -CurrentDateTime $currentDateTime
 
     Write-Verbose 'Adding Authorization headers'
-    $headers = [System.Collections.Generic.Dictionary[[String],[String]]]::new()
+    $headers = [System.Collections.Generic.Dictionary[[String], [String]]]::new()
     $headers.Add("Content-Type", "application/json")
     $headers.Add("Timestamp", $currentDateTime)
     $headers.Add("Klantnummer", $klantnummer)
@@ -131,6 +134,7 @@ try{
     foreach ($department in $departmentsList) {
         Write-Output $department | ConvertTo-Json -Depth 10
     }
-} catch {
+}
+catch {
     throw $_
 }
