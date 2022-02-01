@@ -8,11 +8,11 @@ $VerbosePreference = "Continue"
 
 $config = $Configuration | ConvertFrom-Json
 
-$ApiUser         = $($config.ApiUser)
-$ApiKey          = $($config.ApiKey)
-$KlantNummer     = $($config.KlantNummer)
-$BaseUrl         = $($config.BaseUrl)
-$PastThreshold   = $($config.PastThreshold)
+$ApiUser = $($config.ApiUser)
+$ApiKey = $($config.ApiKey)
+$KlantNummer = $($config.KlantNummer)
+$BaseUrl = $($config.BaseUrl)
+$PastThreshold = $($config.PastThreshold)
 $FutureThreshold = $($config.FutureThreshold)
 
 #region Helper Functions
@@ -109,12 +109,12 @@ function Resolve-HTTPError {
 }
 #endregion Helper Functions
 
-try{
+try {
     $currentDateTime = (Get-Date).ToString("dd-MM-yyyy HH:mm:ss.fff")
     $hashedString = New-SDBHRCalculatedHash -ApiKey $ApiKey -KlantNummer $KlantNummer -CurrentDateTime $currentDateTime
 
     Write-Verbose 'Adding Authorization headers'
-    $headers = [System.Collections.Generic.Dictionary[[String],[String]]]::new()
+    $headers = [System.Collections.Generic.Dictionary[[String], [String]]]::new()
     $headers.Add("Content-Type", "application/json")
     $headers.Add("Timestamp", $currentDateTime)
     $headers.Add("Klantnummer", $klantnummer)
@@ -138,8 +138,8 @@ try{
     $PastThresholdDate = Get-Date (Get-Date).AddMonths(-$PastThreshold)
     $FutureThresholdDate = Get-Date (Get-Date).AddMonths($FutureThreshold)
     foreach ($employment in $employmentsResponse) {
-        $startDate = if(![String]::IsNullOrEmpty($employment.DatumInDienst)){ [datetime]$employment.DatumInDienst } else { $employment.DatumInDienst }
-        $endDate = if(![String]::IsNullOrEmpty($employment.DatumUitDienst)){ [datetime]$employment.DatumUitDienst } else { $employment.DatumUitDienst }
+        $startDate = if (![String]::IsNullOrEmpty($employment.DatumInDienst)) { [datetime]$employment.DatumInDienst } else { $employment.DatumInDienst }
+        $endDate = if (![String]::IsNullOrEmpty($employment.DatumUitDienst)) { [datetime]$employment.DatumUitDienst } else { $employment.DatumUitDienst }
         if ( $startDate -le $FutureThresholdDate -and ($endDate -ge $PastThresholdDate -or [String]::IsNullOrEmpty($endDate)) ) {
             $null = $employmentsList.Add($employment)
         }
@@ -164,17 +164,19 @@ try{
         $person | Add-Member -MemberType NoteProperty -Name 'Contracts'   -Value $employmentsGrouped["$($person.Id)"]
 
         # Filter for employees with contracts
-        if($person.Contracts.Id.Count -ge 1){
+        if ($person.Contracts.Id.Count -ge 1) {
             # 2021/10/28 - RS - Filter out specific (9) persons (without nickname)
-            if($person.Id -notin $employeeIdsToExclude){
+            if ($person.Id -notin $employeeIdsToExclude) {
                 $null = $returnPersons.Add($person)
                 Write-Output $person | ConvertTo-Json -Depth 10
             }
-        } else {
+        }
+        else {
             # Employee has no contracts within thresholds, not importing employee data
         }
     }
     Write-Verbose "Filtered down to $($returnPersons.Count) employees"
-} catch {
+}
+catch {
     throw $_
 }
