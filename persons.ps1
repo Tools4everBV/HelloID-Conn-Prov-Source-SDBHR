@@ -1,73 +1,19 @@
 #####################################################
 # HelloID-Conn-Prov-Source-SDBHR
 #
-# Version: 1.0.0.0
+# Version: 2.0.0.0
+# Updated with filters to include only persons with contracts within thresholds and to output data record by record
 #####################################################
 $VerbosePreference = "Continue"
 
-#region Functions functions
-function Get-SDBHREmployeeData {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [string]
-        $ApiUser,
+$config = $Configuration | ConvertFrom-Json
 
-        [Parameter(Mandatory)]
-        [string]
-        $ApiKey,
-
-        [Parameter(Mandatory)]
-        [string]
-        $KlantNummer,
-
-        [Parameter(Mandatory)]
-        [string]
-        $BaseUrl
-    )
-
-    try {
-        $currentDateTime = (Get-Date).ToString("dd-MM-yyyy HH:mm:ss.fff")
-        $hashedString = New-SDBHRCalculatedHash -ApiKey $ApiKey -KlantNummer $KlantNummer -CurrentDateTime $currentDateTime
-
-        Write-Verbose 'Adding Authorization headers'
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Content-Type", "application/json")
-        $headers.Add("Timestamp", $currentDateTime)
-        $headers.Add("Klantnummer", $klantnummer)
-        $headers.Add("Authentication", "$($ApiUser):$($hashedString)")
-        $headers.add("Api-Version", "2.0")
-
-        Write-Verbose 'Retrieving employee data'
-        $splatParams = @{
-            Uri     = "$BaseUrl/api/MedewerkersBasic"
-            Headers = $headers
-        }
-        $medewerkersResponse = Invoke-SDBHRRestMethod @splatParams
-
-
-        Write-Verbose 'Retrieving employments data'
-        $employmentsList = [System.Collections.generic.List[object]]::new()
-        $splatParams['Uri'] = "$BaseUrl/api/DienstverbandenBasic"
-        $employmentsResponse = Invoke-SDBHRRestMethod @splatParams
-        $employmentsList.AddRange($employmentsResponse)
-        $employmentsList = $employmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Id } }
-        $employmentsGrouped = $employmentsList | Group-Object PersoneelsNummer -AsString -AsHashTable
-
-        Write-Verbose 'Creating list of employees to return'
-        $returnMedewerkers = [System.Collections.generic.List[object]]::new()
-        foreach ($medewerker in $medewerkersResponse) {
-            $medewerker | Add-Member -MemberType NoteProperty -Name 'DisplayName' -Value "$($medewerker.RoepNaam) $($medewerker.AchterNaam)".trim(" ")
-            $medewerker | Add-Member -MemberType NoteProperty -Name 'ExternalId'  -Value $medewerker.Id
-            $medewerker | Add-Member -MemberType NoteProperty -Name 'Contracts'   -Value $employmentsGrouped["$($medewerker.Id)"]
-            $returnMedewerkers.Add($medewerker)
-        }
-        Write-Output $returnMedewerkers
-    } catch {
-        $PScmdlet.ThrowTerminatingError($_)
-    }
-}
-#endregion Functions
+$ApiUser         = $($config.ApiUser)
+$ApiKey          = $($config.ApiKey)
+$KlantNummer     = $($config.KlantNummer)
+$BaseUrl         = $($config.BaseUrl)
+$PastThreshold   = $($config.PastThreshold)
+$FutureThreshold = $($config.FutureThreshold)
 
 #region Helper Functions
 function New-SDBHRCalculatedHash {
@@ -97,7 +43,8 @@ function New-SDBHRCalculatedHash {
         $hashedString = [System.Convert]::ToBase64String($hash)
 
         Write-Output $hashedString
-    } catch {
+    }
+    catch {
         $PScmdlet.ThrowTerminatingError($_)
     }
 }
@@ -126,7 +73,8 @@ function Invoke-SDBHRRestMethod {
                 Headers     = $Headers
             }
             Invoke-RestMethod @splatRestMethodParameters
-        } catch {
+        }
+        catch {
             $PSCmdlet.ThrowTerminatingError($_)
         }
     }
@@ -148,10 +96,11 @@ function Resolve-HTTPError {
         }
         if ($ErrorObject.Exception.GetType().FullName -eq 'Microsoft.PowerShell.Commands.HttpResponseException') {
             $HttpErrorObj['ErrorMessage'] = $ErrorObject.ErrorDetails.Message
-        } elseif ($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException') {
+        }
+        elseif ($ErrorObject.Exception.GetType().FullName -eq 'System.Net.WebException') {
             $stream = $ErrorObject.Exception.Response.GetResponseStream()
             $stream.Position = 0
-            $streamReader = New-Object System.IO.StreamReader $Stream
+            $streamReader = [System.IO.StreamReader]::new($Stream)
             $errorResponse = $StreamReader.ReadToEnd()
             $HttpErrorObj['ErrorMessage'] = $errorResponse
         }
@@ -160,12 +109,72 @@ function Resolve-HTTPError {
 }
 #endregion Helper Functions
 
-$connectionSettings = $Configuration | ConvertFrom-Json
-$splatParams = @{
-    ApiUser     = $($connectionSettings.ApiUser)
-    ApiKey      = $($connectionSettings.ApiKey)
-    KlantNummer = $($connectionSettings.KlantNummer)
-    BaseUrl     = $($connectionSettings.BaseUrl)
+try{
+    $currentDateTime = (Get-Date).ToString("dd-MM-yyyy HH:mm:ss.fff")
+    $hashedString = New-SDBHRCalculatedHash -ApiKey $ApiKey -KlantNummer $KlantNummer -CurrentDateTime $currentDateTime
+
+    Write-Verbose 'Adding Authorization headers'
+    $headers = [System.Collections.Generic.Dictionary[[String],[String]]]::new()
+    $headers.Add("Content-Type", "application/json")
+    $headers.Add("Timestamp", $currentDateTime)
+    $headers.Add("Klantnummer", $klantnummer)
+    $headers.Add("Authentication", "$($ApiUser):$($hashedString)")
+    $headers.add("Api-Version", "2.0")
+
+    Write-Verbose 'Retrieving employee data'
+    $splatParams = @{
+        Uri     = "$BaseUrl/api/MedewerkersBasic"
+        Headers = $headers
+    }
+    $personsResponse = Invoke-SDBHRRestMethod @splatParams
+
+    Write-Verbose 'Retrieving employments data'
+    $employmentsList = [System.Collections.generic.List[object]]::new()
+    $splatParams['Uri'] = "$BaseUrl/api/DienstverbandenBasic"
+    $employmentsResponse = Invoke-SDBHRRestMethod @splatParams
+
+    # Filter for employments within thresholds (default: active start date of maximum 3 months in futuru and end date of maximum 6 months in past)
+    Write-Verbose "Found $($employmentsResponse.Count) employments. Filtering for employments within thresholds"
+    $PastThresholdDate = Get-Date (Get-Date).AddMonths(-$PastThreshold)
+    $FutureThresholdDate = Get-Date (Get-Date).AddMonths($FutureThreshold)
+    foreach ($employment in $employmentsResponse) {
+        $startDate = if(![String]::IsNullOrEmpty($employment.DatumInDienst)){ [datetime]$employment.DatumInDienst } else { $employment.DatumInDienst }
+        $endDate = if(![String]::IsNullOrEmpty($employment.DatumUitDienst)){ [datetime]$employment.DatumUitDienst } else { $employment.DatumUitDienst }
+        if ( $startDate -le $FutureThresholdDate -and ($endDate -ge $PastThresholdDate -or [String]::IsNullOrEmpty($endDate)) ) {
+            $null = $employmentsList.Add($employment)
+        }
+    }
+    Write-Verbose "Filtered down to $($employmentsList.Count) employments"
+
+    $employmentsList = $employmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Id } }
+    $employmentsGrouped = $employmentsList | Group-Object PersoneelsNummer -AsString -AsHashTable
+
+
+    # 2021/10/28 - RS - Filter out specific (9) persons (without nickname)
+    # These cannot be corrected in HR anymore, since they don't exist in SDBHR anymore.
+    # Only in SDB Salary (where this cannot be corrected) and the data we query is from SDB Salary
+    $employeeIdsToExclude = @("90555", "90109", "96760", "94500", "93940", "98760", "90431", "93558", "90181")
+    Write-Verbose "Filtering out [$($employeeIdsToExclude.Count)] persons without nicknames (which cannot be corrected anymore).."
+
+    Write-Verbose "Found $($personsResponse.Count) employees. Filtering for employees with contracts within thresholds and creating list of employees to return"
+    $returnPersons = [System.Collections.generic.List[object]]::new()
+    foreach ($person in $personsResponse) {
+        $person | Add-Member -MemberType NoteProperty -Name 'DisplayName' -Value "$($person.RoepNaam) $($person.AchterNaam)".trim(" ")
+        $person | Add-Member -MemberType NoteProperty -Name 'ExternalId'  -Value $person.Id
+        $person | Add-Member -MemberType NoteProperty -Name 'Contracts'   -Value $employmentsGrouped["$($person.Id)"]
+
+        # Filter for employees with contracts
+        if($person.Contracts.Id.Count -ge 1){
+            # 2021/10/28 - RS - Filter out specific (9) persons (without nickname)
+            if($person.Id -notin $employeeIdsToExclude){
+                $null = $returnPersons.Add($person)
+                Write-Output $person | ConvertTo-Json -Depth 10
+            }
+        } else {
+            # Employee has no contracts within thresholds, not importing employee data
+        }
+    }
+    Write-Verbose "Filtered down to $($returnPersons.Count) employees"
+} catch {
+    throw $_
 }
-$persons = Get-SDBHREmployeeData @splatParams
-Write-Output $persons | ConvertTo-Json -Depth 10
