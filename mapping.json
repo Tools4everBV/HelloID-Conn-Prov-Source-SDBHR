@@ -173,7 +173,7 @@
         {
             "name": "EndDate",
             "mode": "field",
-            "value": "Contract.EindDatum",
+            "value": "DatumUitDienst",
             "validation": {
                 "required": false
             }
@@ -197,7 +197,15 @@
         {
             "name": "StartDate",
             "mode": "field",
-            "value": "Contract.BeginDatum",
+            "value": "DatumInDienst",
+            "validation": {
+                "required": false
+            }
+        },
+        {
+            "name": "Title.Code",
+            "mode": "field",
+            "value": "Functie.Code",
             "validation": {
                 "required": false
             }
