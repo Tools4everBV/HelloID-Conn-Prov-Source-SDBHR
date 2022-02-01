@@ -8,6 +8,12 @@
 
 ![Logo](asset/logo.jpg)
 
+## Versioning
+| Version | Description | Date |
+| - | - | - |
+| 2.0.0   | Added filters to only import persons with contracts within thresholds | 2022/02/01  |
+| 1.0.0   | Initial release | 2021/06/03  |
+
 ## Table of contents
 
 - [Introduction](#Introduction)
@@ -49,13 +55,15 @@ The following settings are required to connect to the API.
 ### Remarks
 
 - The employee data set can contain multiple person objects for a single identity. There is no identifier available that is identifiable to a single (real) person. And each person's object includes single employment.
-- There are multiple (2) start and end date fields, both on the employment (dienstverband) and the contract (contract), please be wary when selecting these in the mapping.
+- There are multiple (2) start and end date fields, both on the employment (dienstverband) and the contract (contract), please be wary when selecting these in the mapping. By default we use the date fields of the employment (dienstverband).
   - Currently, we only receive **one single contract per employment**, **this is always the latest contract!** from the SDB endpoints that we invoke. Because of this, in most situations we use the start and end date of the **employment**.
     
     This is not the optimal situation (as we, Tools4ever are accustomed to), as we "normally" get the history and future contracts as well
     This history and future data is needed so that we can optionally also assign rights prior to an active contract or just after.
 
     For this reason it is also required that in the case where double rights are required (based on multiple active contracts), there is also an a extra employment and the rights can therefore be assigned based on both employments.
+- This connector (now) only imports the persons with acontract within the threshold, this also uses the date fields on the employment (dienstverband), please keep this in mind and change this accordingly if needed.
+
 
 ### Contents
 
