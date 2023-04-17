@@ -130,9 +130,43 @@ try {
     $departmentsList.AddRange($departmentsResponse)
     Write-Verbose "Found $($departmentsResponse.Count) departments. Creating list of departments to return"
 
-    $departmentsList = $departmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Code } }, @{name = 'DisplayName'; expression = { $_.Omschrijving } }
-    foreach ($department in $departmentsList) {
-        Write-Output $department | ConvertTo-Json -Depth 10
+    # $departmentsList = $departmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Code } }, @{name = 'DisplayName'; expression = { $_.Omschrijving } }
+    foreach ($record in $departmentsList) {
+        # Department can have multiple managers, therefore we sort on id and then select the first, if no manager is provided, we leave the ManagerExternalId emtpy
+        if ($null -ne $record.Leidinggevenden) {
+            $manager = $record.Leidinggevenden | Sort-Object -Property Id | Select-Object -First 1
+            if (-not[string]::IsNullOrEmpty($manager)) {
+                $managerExternalId = $manager.Id 
+            }
+            else {
+                $managerExternalId = $null
+            }
+        }
+        else {
+            $managerExternalId = $null
+        }
+
+        # Department can have no parent department, therefore we check if there is a parent department, if not we leave the ParentExternalId empty
+        if ($null -ne $record.HoofdAfdeling) {
+            $parentExternalId = $record.HoofdAfdeling.Code
+        }
+        else {
+            $parentExternalId = $null
+        }
+
+        $department = [PSCustomObject]@{
+            ExternalId        = $record.Code
+            ShortName         = $record.Omschrijving
+            DisplayName       = $record.Omschrijving
+            ManagerExternalId = $managerExternalId
+            ParentExternalId  = $parentExternalId
+        }
+        
+        # Sanitize and export the json
+        $department = $department | ConvertTo-Json -Depth 10
+        $department = $department.Replace("._", "__")
+        
+        Write-Output $department
     }
 }
 catch {
