@@ -20,19 +20,22 @@
 ## Versioning
 | Version | Description | Date |
 | - | - | - |
+| 2.0.1   | Hotfix for departments script: only send specific object and no longer all available data | 2023/04/17  |
 | 2.0.0   | Added filters to only import persons with contracts within thresholds | 2022/02/01  |
 | 1.0.0   | Initial release | 2021/06/03  |
 
 ## Table of contents
 
-- [Introduction](#Introduction)
-- [Getting started](#Getting-started)
-  + [Connection settings](#Connection-settings)
-  + [Remarks](#Remarks)
-  + [Contents](#Contents)
-- [Getting help](Getting-help)
-- [Contributing](Contributing)
-- [Code Contributors](Code-Contributors)
+- [HelloID-Conn-Prov-Source-SDBHR](#helloid-conn-prov-source-sdbhr)
+    - [Remarks](#remarks)
+  - [Versioning](#versioning)
+  - [Table of contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Getting started](#getting-started)
+    - [Connection settings](#connection-settings)
+    - [Contents](#contents)
+  - [Getting help](#getting-help)
+  - [HelloID Docs](#helloid-docs)
 
 ## Introduction
 
