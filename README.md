@@ -14,8 +14,9 @@
 | This connector (now) **only imports the persons with a contract within the threshold**, this also uses the date fields on the employment (dienstverband), please keep this in mind and change this accordingly if needed.       |
 
 <br />
-
-![Logo](asset/logo.jpg)
+<p align="center">
+  <img src="https://www.tools4ever.nl/connector-logos/sdbgroep-logo.png" width="500">
+</p> 
 
 ## Versioning
 | Version | Description | Date |
