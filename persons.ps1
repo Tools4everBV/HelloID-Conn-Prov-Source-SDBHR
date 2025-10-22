@@ -1,8 +1,9 @@
 #####################################################
 # HelloID-Conn-Prov-Source-SDBHR
 #
-# Version: 2.0.0.0
+# Version: 2.1.0
 # Updated with filters to include only persons with contracts within thresholds and to output data record by record
+# Updated to retrieve actual employment data for current period instead of latest values
 #####################################################
 $VerbosePreference = "Continue"
 
