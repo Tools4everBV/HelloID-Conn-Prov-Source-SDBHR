@@ -151,9 +151,9 @@ try {
     $employmentsResponse = Invoke-SDBHRRestMethod @splatParams
     Write-Information "Retrieved $($employmentsResponse.Count) employments"
 
-    # Filter for employments within thresholds (default: active start date of maximum 3 months in futuru and end date of maximum 6 months in past)
-    $PastThresholdDate = Get-Date (Get-Date).AddMonths(-$PastThreshold)
-    $FutureThresholdDate = Get-Date (Get-Date).AddMonths($FutureThreshold)
+    # Filter for employments within thresholds (default: active start date of maximum 90 days in future and end date of maximum 180 days in past)
+    $PastThresholdDate = Get-Date (Get-Date).AddDays(-$PastThreshold)
+    $FutureThresholdDate = Get-Date (Get-Date).AddDays(($FutureThreshold)
     Write-Information "Filtering for employments within thresholds. Past threshold date: $($PastThresholdDate), Future threshold date: $($FutureThresholdDate)"
     foreach ($employment in $employmentsResponse) {
         $startDate = if (![String]::IsNullOrEmpty($employment.DatumInDienst)) { [datetime]$employment.DatumInDienst } else { $employment.DatumInDienst }
