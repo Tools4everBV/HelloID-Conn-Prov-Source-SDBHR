@@ -34,7 +34,7 @@ function New-SDBHRCalculatedHash {
     )
 
     try {
-        Write-Verbose 'Calculating SDHBR hash'
+        Write-Information "Calculating SDHBR hash"
         $baseString = "$($CurrentDateTime.Substring(0,10))|$($CurrentDateTime.Substring(11,12))|$KlantNummer"
         $key = [System.Text.Encoding]::UTF8.GetBytes($ApiKey)
         $hmac256 = [System.Security.Cryptography.HMACSHA256]::new()
@@ -63,7 +63,7 @@ function Invoke-SDBHRRestMethod {
 
     process {
         try {
-            Write-Verbose "Invoking command '$($MyInvocation.MyCommand)' to Uri '$Uri'"
+            # Write-Information "Invoking command '$($MyInvocation.MyCommand)' to Uri '$Uri'"
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::tls12
 
             $splatRestMethodParameters = @{
@@ -71,6 +71,8 @@ function Invoke-SDBHRRestMethod {
                 Method      = 'Get'
                 ContentType = 'application/json'
                 Headers     = $Headers
+                Verbose     = $false
+                ErrorAction = 'Stop'
             }
             Invoke-RestMethod @splatRestMethodParameters
         }
@@ -113,7 +115,7 @@ try {
     $currentDateTime = (Get-Date).ToString("dd-MM-yyyy HH:mm:ss.fff")
     $hashedString = New-SDBHRCalculatedHash -ApiKey $ApiKey -KlantNummer $KlantNummer -CurrentDateTime $currentDateTime
 
-    Write-Verbose 'Adding Authorization headers'
+    Write-Information "Adding Authorization headers"
     $headers = [System.Collections.Generic.Dictionary[[String], [String]]]::new()
     $headers.Add("Content-Type", "application/json")
     $headers.Add("Timestamp", $currentDateTime)
@@ -121,36 +123,36 @@ try {
     $headers.Add("Authentication", "$($ApiUser):$($hashedString)")
     $headers.add("Api-Version", "2.0")
 
-    Write-Verbose 'Retrieving employee data'
+    Write-Information "Retrieving employee data"
     $splatParams = @{
         Uri     = "$BaseUrl/api/MedewerkersBasic"
         Headers = $headers
     }
     $personsResponse = Invoke-SDBHRRestMethod @splatParams
 
-    Write-Verbose 'Retrieving employments data'
+    Write-Information "Retrieving employments data"
     $employmentsList = [System.Collections.generic.List[object]]::new()
     $splatParams['Uri'] = "$BaseUrl/api/DienstverbandenBasic"
     $employmentsResponse = Invoke-SDBHRRestMethod @splatParams
+    Write-Information "Retrieved $($employmentsResponse.Count) employments"
 
     # Filter for employments within thresholds (default: active start date of maximum 3 months in futuru and end date of maximum 6 months in past)
-    Write-Verbose "Found $($employmentsResponse.Count) employments. Filtering for employments within thresholds"
     $PastThresholdDate = Get-Date (Get-Date).AddMonths(-$PastThreshold)
     $FutureThresholdDate = Get-Date (Get-Date).AddMonths($FutureThreshold)
+    Write-Information "Filtering for employments within thresholds. Past threshold date: $($PastThresholdDate), Future threshold date: $($FutureThresholdDate)"
     foreach ($employment in $employmentsResponse) {
         $startDate = if (![String]::IsNullOrEmpty($employment.DatumInDienst)) { [datetime]$employment.DatumInDienst } else { $employment.DatumInDienst }
         $endDate = if (![String]::IsNullOrEmpty($employment.DatumUitDienst)) { [datetime]$employment.DatumUitDienst } else { $employment.DatumUitDienst }
-        if ( $startDate -le $FutureThresholdDate -and ($endDate -ge $PastThresholdDate -or [String]::IsNullOrEmpty($endDate)) ) {
+        if ( $startDate -le $FutureThresholdDate -and ($endDate -ge $PastThresholdDate -or [String]::IsNullOrEmpty($endDate)) -and $employment.contractvorm.Omschrijving -ne "Vrijwilliger" ) {
             $null = $employmentsList.Add($employment)
         }
     }
-    Write-Verbose "Filtered down to $($employmentsList.Count) employments"
+    Write-Information "Filtered down to $($employmentsList.Count) employments within thresholds"
 
     $employmentsList = $employmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Id } }
     $employmentsGrouped = $employmentsList | Group-Object PersoneelsNummer -AsString -AsHashTable
 
-
-    Write-Verbose "Found $($personsResponse.Count) employees. Filtering for employees with contracts within thresholds and creating list of employees to return"
+    Write-Information "Importing persons with contracts within thresholds"
     $returnPersons = [System.Collections.generic.List[object]]::new()
     foreach ($person in $personsResponse) {
         $person | Add-Member -MemberType NoteProperty -Name 'DisplayName' -Value "$($person.RoepNaam) $($person.AchterNaam)".trim(" ")
@@ -166,7 +168,7 @@ try {
             # Employee has no contracts within thresholds, not importing employee data
         }
     }
-    Write-Verbose "Filtered down to $($returnPersons.Count) employees"
+    Write-Information "Imported $($returnPersons.Count) persons with contracts within thresholds"
 }
 catch {
     throw $_
