@@ -44,22 +44,22 @@
   {
     "key": "PastThreshold",
     "type": "input",
-    "defaultValue": "6",
+    "defaultValue": "180",
     "templateOptions": {
       "label": "Past Threshold",
-      "placeholder": "6",
-      "description": "The amount of months a contract's enddate can be in the past and still be included in the import",
+      "placeholder": "180",
+      "description": "The amount of days a contract's enddate can be in the past and still be included in the import",
       "required": true
     }
   },
   {
     "key": "FutureThreshold",
     "type": "input",
-    "defaultValue": "3",
+    "defaultValue": "90",
     "templateOptions": {
       "label": "Future Threshold",
-      "placeholder": "3",
-      "description": "The amount of months a contract's startdate can be in the future and still be included in the import",
+      "placeholder": "90",
+      "description": "The amount of days a contract's startdate can be in the future and still be included in the import",
       "required": true
     }
   }
