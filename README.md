@@ -65,7 +65,7 @@ The following settings are required to connect to the API.
 
 ### Mapping
 
-The field mapping can be imported by using the _mapping.json_ file.
+The mapping can be imported by using the _mapping.json_ file.
 
 
 ## Remarks
