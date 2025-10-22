@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 
+## [2.1.1] - 22-10-2025
+
+### Added
+- **GitHub workflows for automation:**
+  - Added `.github/workflows/createRelease.yaml` to automate release creation based on CHANGELOG.md.
+  - Added `.github/workflows/verifyChangelog.yaml` to enforce CHANGELOG.md updates on pull requests.
+
 ## [2.1.0] - 22-10-2025
 
 ### Added
