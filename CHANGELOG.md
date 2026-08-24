@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 
+
+## [3.0.0] - 24-08-2026
+
+### Changed
+- **Remove Periods**
+  - Removed the use of periods `/api/dienstverbandperiodesbasic/periode`
+
 ## [2.1.1] - 22-10-2025
 
 ### Added

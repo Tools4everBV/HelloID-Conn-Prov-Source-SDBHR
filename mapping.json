@@ -188,8 +188,8 @@
         },
         {
             "name": "Manager.ExternalId",
-            "mode": "field",
-            "value": "Afdeling.Leidinggevenden",
+            "mode": "complex",
+            "value": "function getManager() {\r\n  let value = ''\r\n\r\n  if (\r\n    sourceContract &&\r\n    sourceContract.Leidinggevende &&\r\n    sourceContract.Leidinggevende.Id !== undefined\r\n  ) {\r\n    value = sourceContract.Leidinggevende.Id\r\n  }\r\n\r\n  return value\r\n}\r\n\r\ngetManager();\r\n",
             "validation": {
                 "required": false
             }
