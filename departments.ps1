@@ -70,7 +70,8 @@ function Invoke-SDBHRRestMethod {
                 ContentType = 'application/json'
                 Headers     = $Headers
             }
-            Invoke-RestMethod @splatRestMethodParameters
+            $response = Invoke-RestMethod @splatRestMethodParameters
+            Write-Output $response
         }
         catch {
             $PSCmdlet.ThrowTerminatingError($_)

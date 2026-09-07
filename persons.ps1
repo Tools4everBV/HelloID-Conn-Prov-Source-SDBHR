@@ -14,6 +14,21 @@ $KlantNummer = $($config.KlantNummer)
 $BaseUrl = $($config.BaseUrl)
 $PastThreshold = $($config.PastThreshold)
 $FutureThreshold = $($config.FutureThreshold)
+$UsePeriods = $($config.UsePeriods)
+
+# Define Properties to check on employment for period to overwrite on employment if different
+$propertiesToCheckOnPeriodEmployment = @(
+    'Afdeling',
+    'Functie',
+    'Kostensoort1',
+    'Kostensoort2',
+    'Kostensoort3',
+    'Kostensoort4',
+    'Kostenplaats1',
+    'Kostenplaats2',
+    'Kostenplaats3',
+    'Kostenplaats4'
+)
 
 #region Helper Functions
 function New-SDBHRCalculatedHash {
@@ -74,7 +89,8 @@ function Invoke-SDBHRRestMethod {
                 Verbose     = $false
                 ErrorAction = 'Stop'
             }
-            Invoke-RestMethod @splatRestMethodParameters
+            $response = Invoke-RestMethod @splatRestMethodParameters
+            Write-Output $response
         }
         catch {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -149,6 +165,43 @@ try {
     }
     Write-Information "Filtered down to $($employmentsList.Count) employments within thresholds"
 
+    if ($UsePeriods) {
+        # Get employments for current period and overwrite employment data if it differs to get actual values as of today instead of the "latest values"
+        $currentYear = (Get-Date).Year
+        $currentMonth = (Get-Date).Month
+        Write-Information "Retrieving employments data for period $($currentYear)/$($currentMonth)"
+        $employmentsListPeriods = [System.Collections.generic.List[object]]::new()
+        $splatParams['Uri'] = "$BaseUrl/api/dienstverbandperiodesbasic/periode/$($currentYear)/$($currentMonth)?api-version=2.0"
+        $employmentsPeriodResponse = Invoke-SDBHRRestMethod @splatParams
+        foreach ($employmentPeriod in $employmentsPeriodResponse) {
+            $null = $employmentsListPeriods.Add($employmentPeriod)
+        }
+
+        # Group on DienstverbandId (to match to employments)
+        $employmentsListPeriodsGrouped = $employmentsListPeriods | Group-Object DienstverbandId -AsString -AsHashTable
+
+        Write-Information "Retrieved $($employmentsListPeriods.Count) employments for period $($currentYear)/$($currentMonth)"
+
+        foreach ($employment in $employmentsList) {
+            $employmentForPeriod = $employmentsListPeriodsGrouped["$($employment.Id)"]
+            if ($null -ne $employmentForPeriod) {
+                # Should always only result in a single employment for period, but just in case, select the first one
+                $employmentForPeriod = $employmentForPeriod | Select-Object -First 1
+
+                if (![string]::IsNullOrEmpty($employmentForPeriod)) {
+                    foreach ($property in $propertiesToCheckOnPeriodEmployment) {
+                        # If property from employment for period is different than employment, use property from employment for period
+                        if ( $employment.$property -ne $employmentForPeriod.$property) {
+                            $employment.$property = $employmentForPeriod.$property
+                        }
+                    }
+                }
+            }
+            else {
+                Write-Warning "No employment for period found for employment $($employment.Id)"
+            }
+        }
+    }
 
     $employmentsList = $employmentsList | Select-Object *, @{name = 'ExternalId'; expression = { $_.Id } }
     $employmentsGrouped = $employmentsList | Group-Object PersoneelsNummer -AsString -AsHashTable
@@ -160,7 +213,7 @@ try {
         $person | Add-Member -MemberType NoteProperty -Name 'ExternalId'  -Value $person.Id
         $person | Add-Member -MemberType NoteProperty -Name 'Contracts'   -Value $employmentsGrouped["$($person.Id)"]
 
-        #Filter for employees with contracts
+        # Filter for employees with contracts
         if ($person.Contracts.Id.Count -ge 1) {
             $null = $returnPersons.Add($person)
             Write-Output $person | ConvertTo-Json -Depth 10
