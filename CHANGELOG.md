@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file. The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [3.0.0] - 24-08-2026
+
+### Changed
+  - Make the use of periods `/api/dienstverbandperiodesbasic/periode` optional.
 
 ## [2.1.1] - 22-10-2025
 
@@ -33,7 +37,6 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 - **Asset cleanup:**
   - Removed unused asset/logo.jpg.
-
 
 ## [2.0.1] - 17-04-2023
 

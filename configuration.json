@@ -62,5 +62,15 @@
       "description": "The amount of days a contract's startdate can be in the future and still be included in the import",
       "required": true
     }
+  },
+  {
+    "key": "UsePeriods",
+    "type": "checkbox",
+    "defaultValue": false,
+    "templateOptions": {
+      "label": "Use Periods to overwrite employment data",
+      "description": "Get employments for current period and overwrite employment data if it differs to get actual values as of today instead of the latest values",
+      "required": false
+    }
   }
 ]

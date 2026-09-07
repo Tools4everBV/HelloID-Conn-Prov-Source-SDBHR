@@ -1,9 +1,8 @@
 #####################################################
 # HelloID-Conn-Prov-Source-SDBHR
 #
-# Version: 2.1.0
+# Version: 3.0.0.0
 # Updated with filters to include only persons with contracts within thresholds and to output data record by record
-# Updated to retrieve actual employment data for current period instead of latest values
 #####################################################
 $VerbosePreference = "Continue"
 
@@ -15,6 +14,7 @@ $KlantNummer = $($config.KlantNummer)
 $BaseUrl = $($config.BaseUrl)
 $PastThreshold = $($config.PastThreshold)
 $FutureThreshold = $($config.FutureThreshold)
+$UsePeriods = $($config.UsePeriods)
 
 # Define Properties to check on employment for period to overwrite on employment if different
 $propertiesToCheckOnPeriodEmployment = @(
@@ -89,7 +89,8 @@ function Invoke-SDBHRRestMethod {
                 Verbose     = $false
                 ErrorAction = 'Stop'
             }
-            Invoke-RestMethod @splatRestMethodParameters
+            $response = Invoke-RestMethod @splatRestMethodParameters
+            Write-Output $response
         }
         catch {
             $PSCmdlet.ThrowTerminatingError($_)
@@ -164,39 +165,41 @@ try {
     }
     Write-Information "Filtered down to $($employmentsList.Count) employments within thresholds"
 
-    # Get employments for current period and overwrite employment data if it differs to get actual values as of today instead of the "latest values"
-    $currentYear = (Get-Date).Year
-    $currentMonth = (Get-Date).Month
-    Write-Information "Retrieving employments data for period $($currentYear)/$($currentMonth)"
-    $employmentsListPeriods = [System.Collections.generic.List[object]]::new()
-    $splatParams['Uri'] = "$BaseUrl/api/dienstverbandperiodesbasic/periode/$($currentYear)/$($currentMonth)?api-version=2.0"
-    $employmentsPeriodResponse = Invoke-SDBHRRestMethod @splatParams
-    foreach ($employmentPeriod in $employmentsPeriodResponse) {
-        $null = $employmentsListPeriods.Add($employmentPeriod)
-    }
+    if ($UsePeriods) {
+        # Get employments for current period and overwrite employment data if it differs to get actual values as of today instead of the "latest values"
+        $currentYear = (Get-Date).Year
+        $currentMonth = (Get-Date).Month
+        Write-Information "Retrieving employments data for period $($currentYear)/$($currentMonth)"
+        $employmentsListPeriods = [System.Collections.generic.List[object]]::new()
+        $splatParams['Uri'] = "$BaseUrl/api/dienstverbandperiodesbasic/periode/$($currentYear)/$($currentMonth)?api-version=2.0"
+        $employmentsPeriodResponse = Invoke-SDBHRRestMethod @splatParams
+        foreach ($employmentPeriod in $employmentsPeriodResponse) {
+            $null = $employmentsListPeriods.Add($employmentPeriod)
+        }
 
-    # Group on DienstverbandId (to match to employments)
-    $employmentsListPeriodsGrouped = $employmentsListPeriods | Group-Object DienstverbandId -AsString -AsHashTable
+        # Group on DienstverbandId (to match to employments)
+        $employmentsListPeriodsGrouped = $employmentsListPeriods | Group-Object DienstverbandId -AsString -AsHashTable
 
-    Write-Information "Retrieved $($employmentsListPeriods.Count) employments for period $($currentYear)/$($currentMonth)"
+        Write-Information "Retrieved $($employmentsListPeriods.Count) employments for period $($currentYear)/$($currentMonth)"
 
-    foreach ($employment in $employmentsList) {
-        $employmentForPeriod = $employmentsListPeriodsGrouped["$($employment.Id)"]
-        if ($null -ne $employmentForPeriod) {
-            # Should always only result in a single employment for period, but just in case, select the first one
-            $employmentForPeriod = $employmentForPeriod | Select-Object -First 1
+        foreach ($employment in $employmentsList) {
+            $employmentForPeriod = $employmentsListPeriodsGrouped["$($employment.Id)"]
+            if ($null -ne $employmentForPeriod) {
+                # Should always only result in a single employment for period, but just in case, select the first one
+                $employmentForPeriod = $employmentForPeriod | Select-Object -First 1
 
-            if (![string]::IsNullOrEmpty($employmentForPeriod)) {
-                foreach ($property in $propertiesToCheckOnPeriodEmployment) {
-                    # If property from employment for period is different than employment, use property from employment for period
-                    if ( $employment.$property -ne $employmentForPeriod.$property) {
-                        $employment.$property = $employmentForPeriod.$property
+                if (![string]::IsNullOrEmpty($employmentForPeriod)) {
+                    foreach ($property in $propertiesToCheckOnPeriodEmployment) {
+                        # If property from employment for period is different than employment, use property from employment for period
+                        if ( $employment.$property -ne $employmentForPeriod.$property) {
+                            $employment.$property = $employmentForPeriod.$property
+                        }
                     }
                 }
             }
-        }
-        else {
-            Write-Warning "No employment for period found for employment $($employment.Id)"
+            else {
+                Write-Warning "No employment for period found for employment $($employment.Id)"
+            }
         }
     }
 
